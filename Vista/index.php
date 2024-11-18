@@ -415,77 +415,119 @@ include('../Auth/session.php');
     <hr style="height:10px; border:0; background-color:yellowgreen;">
 
     <div class="container mt-5" id="platillosTable">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Platos y Bebidas</h2>
-            <div>
-                <?php
-                $tipo_platillo = isset($_GET['tipo']) ? $_GET['tipo'] : '';
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Platos y Bebidas</h2>
+        <div>
+            <?php
+            $tipo_platillo = isset($_GET['tipo']) ? $_GET['tipo'] : '';
 
-                $where_clause = "";
-                if ($tipo_platillo != '') {
-                    $where_clause = " WHERE p.id_tipo_producto = '$tipo_platillo'";
-                }
-                ?>
-                <form method="GET" action="">
-                    <select name="tipo" class="form-select d-inline-block w-auto me-2" onchange="this.form.submit()">
-                        <option value="" selected>Todos</option>
-                        <option value="1" <?php if ($tipo_platillo == '1')
-                            echo 'selected'; ?>>Personal</option>
-                        <option value="2" <?php if ($tipo_platillo == '2')
-                            echo 'selected'; ?>>Mediano</option>
-                        <option value="3" <?php if ($tipo_platillo == '3')
-                            echo 'selected'; ?>>Familiar</option>
-                    </select>
-                    <div class="input-group d-inline-flex">
-                        <input type="text" class="form-control" placeholder="Buscar" name="buscar"
-                            value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" />
-                    </div>
-                </form>
-            </div>
+            $where_clause = "";
+            if ($tipo_platillo != '') {
+                $where_clause = " WHERE p.id_tipo_producto = '$tipo_platillo'";
+            }
+            ?>
+            <form method="GET" action="">
+                <select name="tipo" class="form-select d-inline-block w-auto me-2" onchange="this.form.submit()">
+                    <option value="" selected>Todos</option>
+                    <option value="1" <?php if ($tipo_platillo == '1') echo 'selected'; ?>>Personal</option>
+                    <option value="2" <?php if ($tipo_platillo == '2') echo 'selected'; ?>>Mediano</option>
+                    <option value="3" <?php if ($tipo_platillo == '3') echo 'selected'; ?>>Familiar</option>
+                </select>
+                <div class="input-group d-inline-flex">
+                    <input type="text" class="form-control" placeholder="Buscar" name="buscar" value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" />
+                </div>
+            </form>
         </div>
+    </div>
 
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Nombre de Producto</th>
-                    <th>Tipo</th>
-                    <th>Precio</th>
-                    <th>Operaciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                $buscar = isset($_GET['buscar']) ? $_GET['buscar'] : '';
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Imagen</th> <!-- Nueva columna para la imagen -->
+                <th>Nombre de Producto</th>
+                <th>Tipo</th>
+                <th>Precio</th>
+                <th>Operaciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            // Paginación: definir el número de registros por página
+            $registros_por_pagina = 8;
+            $pagina_actual = isset($_GET['pagina']) ? $_GET['pagina'] : 1;
+            $offset = ($pagina_actual - 1) * $registros_por_pagina;
 
-                $query = "SELECT p.nombre_platillo, p.precio, tp.nombre_tipo 
+            $buscar = isset($_GET['buscar']) ? $_GET['buscar'] : '';
+
+            // Contar el total de registros para determinar cuántas páginas habrá
+            $query_count = "SELECT COUNT(*) AS total FROM platillos p JOIN tipo_producto tp ON p.id_tipo_producto = tp.id" . $where_clause;
+            if (!empty($buscar)) {
+                $query_count .= " AND p.nombre_platillo LIKE '%$buscar%'";
+            }
+            $result_count = mysqli_query($conn, $query_count);
+            $total_registros = mysqli_fetch_assoc($result_count)['total'];
+            $total_paginas = ceil($total_registros / $registros_por_pagina);
+
+            // Obtener los registros de la página actual
+            $query = "SELECT p.nombre_platillo, p.precio, tp.nombre_tipo, p.photo 
                       FROM platillos p 
                       JOIN tipo_producto tp ON p.id_tipo_producto = tp.id" . $where_clause;
+            if (!empty($buscar)) {
+                $query .= " AND p.nombre_platillo LIKE '%$buscar%'";
+            }
+            $query .= " LIMIT $offset, $registros_por_pagina"; // Limitar los resultados por página
 
-                if (!empty($buscar)) {
-                    $query .= " AND p.nombre_platillo LIKE '%$buscar%'";
-                }
+            $result = mysqli_query($conn, $query);
 
-                $result = mysqli_query($conn, $query);
+            if ($result && mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_assoc($result)) {
+                    echo "<tr>";
 
-                if ($result && mysqli_num_rows($result) > 0) {
-                    while ($row = mysqli_fetch_assoc($result)) {
-                        echo "<tr>";
-                        echo "<td>" . htmlspecialchars($row['nombre_platillo']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['nombre_tipo']) . "</td>";
-                        echo "<td>s/" . htmlspecialchars($row['precio']) . "</td>";
-                        echo '<td>
+                    // Verificar si hay una imagen y mostrarla
+                    $img_url = !empty($row['photo']) ? "ruta/a/imagenes/" . $row['photo'] : "ruta/a/imagen_default.jpg"; 
+
+                    // Mostrar imagen
+                    echo "<td><img src='$img_url' alt='Imagen del platillo' class='img-thumbnail' style='width: 50px; height: 50px;'></td>";
+                    
+                    echo "<td>" . htmlspecialchars($row['nombre_platillo']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['nombre_tipo']) . "</td>";
+                    echo "<td>s/" . htmlspecialchars($row['precio']) . "</td>";
+                    echo '<td>
                             <button class="btn btn-warning btn-sm me-2"><i class="bi bi-pencil-square"></i> Editar</button>
                             <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Borrar</button>
                           </td>';
-                        echo "</tr>";
-                    }
-                } else {
-                    echo "<tr><td colspan='4' class='text-center'>No hay datos disponibles</td></tr>";
+                    echo "</tr>";
                 }
-                ?>
-            </tbody>
-        </table>
-    </div>
+            } else {
+                echo "<tr><td colspan='5' class='text-center'>No hay datos disponibles</td></tr>";
+            }
+            ?>
+        </tbody>
+    </table>
+
+    <!-- Paginación -->
+    <nav aria-label="Página de resultados">
+        <ul class="pagination justify-content-center">
+            <li class="page-item <?php echo ($pagina_actual <= 1) ? 'disabled' : ''; ?>">
+                <a class="page-link" href="?pagina=<?php echo ($pagina_actual - 1); ?>&tipo=<?php echo $tipo_platillo; ?>&buscar=<?php echo urlencode($buscar); ?>" aria-label="Anterior">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            <?php
+            for ($i = 1; $i <= $total_paginas; $i++) {
+                echo "<li class='page-item " . ($i == $pagina_actual ? "active" : "") . "'><a class='page-link' href='?pagina=$i&tipo=$tipo_platillo&buscar=" . urlencode($buscar) . "'>$i</a></li>";
+            }
+            ?>
+            <li class="page-item <?php echo ($pagina_actual >= $total_paginas) ? 'disabled' : ''; ?>">
+                <a class="page-link" href="?pagina=<?php echo ($pagina_actual + 1); ?>&tipo=<?php echo $tipo_platillo; ?>&buscar=<?php echo urlencode($buscar); ?>" aria-label="Siguiente">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+
 
     <script>
         function scrollToTable() {
