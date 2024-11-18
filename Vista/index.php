@@ -498,32 +498,43 @@ include('../Auth/session.php');
             <h2>Platos y Bebidas</h2>
             <div>
                 <?php
+                // Obtener el tipo de platillo y búsqueda desde los parámetros GET
                 $tipo_platillo = isset($_GET['tipo']) ? $_GET['tipo'] : '';
+                $buscar = isset($_GET['buscar']) ? $_GET['buscar'] : '';
 
+                // Filtrar por tipo de platillo
                 $where_clause = "";
                 if ($tipo_platillo != '') {
                     $where_clause = " WHERE p.id_tipo_producto = '$tipo_platillo'";
                 }
+
+                // Filtrar por búsqueda
+                if (!empty($buscar)) {
+                    $where_clause .= ($where_clause ? " AND" : " WHERE") . " p.nombre_platillo LIKE '%$buscar%'";
+                }
                 ?>
                 <form method="GET" action="">
-                    <select name="tipo" class="form-select d-inline-block w-auto me-2" onchange="this.form.submit()">
-                        <option value="" selected>Todos</option>
-                        <option value="1" <?php if ($tipo_platillo == '1')
-                            echo 'selected'; ?>>Personal</option>
-                        <option value="2" <?php if ($tipo_platillo == '2')
-                            echo 'selected'; ?>>Mediano</option>
-                        <option value="3" <?php if ($tipo_platillo == '3')
-                            echo 'selected'; ?>>Familiar</option>
-                    </select>
-                    <div class="input-group d-inline-flex">
-                        <input type="text" class="form-control" placeholder="Buscar" name="buscar"
-                            value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" />
+                    <div class="d-flex">
+                        <select name="tipo" class="form-select d-inline-block w-auto me-2"
+                            onchange="this.form.submit()">
+                            <option value="" selected>Todos</option>
+                            <option value="1" <?php if ($tipo_platillo == '1')
+                                echo 'selected'; ?>>Personal</option>
+                            <option value="2" <?php if ($tipo_platillo == '2')
+                                echo 'selected'; ?>>Mediano</option>
+                            <option value="3" <?php if ($tipo_platillo == '3')
+                                echo 'selected'; ?>>Familiar</option>
+                        </select>
+                        <div class="input-group d-inline-flex">
+                            <input type="text" class="form-control" placeholder="Buscar" name="buscar"
+                                value="<?php echo htmlspecialchars($buscar); ?>" />
+                            <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+                        </div>
                     </div>
                 </form>
                 <button class="btn btn-success btn-sm me-2" onclick="agregarPlatillo()">
                     <i class="bi bi-plus-circle"></i> Agregar
                 </button>
-
             </div>
         </div>
 
@@ -539,49 +550,40 @@ include('../Auth/session.php');
             </thead>
             <tbody>
                 <?php
+                // Configurar paginación
                 $registros_por_pagina = 8;
                 $pagina_actual = isset($_GET['pagina']) ? $_GET['pagina'] : 1;
                 $offset = ($pagina_actual - 1) * $registros_por_pagina;
 
-                $buscar = isset($_GET['buscar']) ? $_GET['buscar'] : '';
-
+                // Contar el número total de registros
                 $query_count = "SELECT COUNT(*) AS total FROM platillos p JOIN tipo_producto tp ON p.id_tipo_producto = tp.id" . $where_clause;
-                if (!empty($buscar)) {
-                    $query_count .= " AND p.nombre_platillo LIKE '%$buscar%'";
-                }
                 $result_count = mysqli_query($conn, $query_count);
                 $total_registros = mysqli_fetch_assoc($result_count)['total'];
                 $total_paginas = ceil($total_registros / $registros_por_pagina);
 
+                // Obtener los registros con los filtros aplicados
                 $query = "SELECT p.id, p.nombre_platillo, p.precio, tp.nombre_tipo, p.photo 
-                FROM platillos p 
-                JOIN tipo_producto tp ON p.id_tipo_producto = tp.id
-                " . $where_clause . " 
-                ORDER BY p.id DESC";
-      
-                if (!empty($buscar)) {
-                    $query .= " AND p.nombre_platillo LIKE '%$buscar%'";
-                }
-                $query .= " LIMIT $offset, $registros_por_pagina";
+                      FROM platillos p 
+                      JOIN tipo_producto tp ON p.id_tipo_producto = tp.id
+                      " . $where_clause . " 
+                      ORDER BY p.id DESC
+                      LIMIT $offset, $registros_por_pagina";
 
                 $result = mysqli_query($conn, $query);
 
+                // Mostrar los resultados
                 if ($result && mysqli_num_rows($result) > 0) {
                     while ($row = mysqli_fetch_assoc($result)) {
                         echo "<tr>";
-
                         $img_url = !empty($row['photo']) ? "ruta/a/imagenes/" . $row['photo'] : "ruta/a/imagen_default.jpg";
-
                         echo "<td><img src='$img_url' alt='Imagen del platillo' class='img-thumbnail' style='width: 50px; height: 50px;'></td>";
-
                         echo "<td>" . htmlspecialchars($row['nombre_platillo']) . "</td>";
                         echo "<td>" . htmlspecialchars($row['nombre_tipo']) . "</td>";
                         echo "<td>s/" . htmlspecialchars($row['precio']) . "</td>";
                         echo '<td>
-                            <button class="btn btn-warning btn-sm me-2" onclick="editarPlatillo(' . $row['id'] . ')"><i class="bi bi-pencil-square"></i> Editar</button>
-                            <button class="btn btn-danger  btn-sm me-2" onclick="eliminarPlatillo(' . $row['id'] . ')"> <i class="bi bi-trash"></i> Borrar</button>
-
-                            </td>';
+                        <button class="btn btn-warning btn-sm me-2" onclick="editarPlatillo(' . $row['id'] . ')"><i class="bi bi-pencil-square"></i> Editar</button>
+                        <button class="btn btn-danger  btn-sm me-2" onclick="eliminarPlatillo(' . $row['id'] . ')"> <i class="bi bi-trash"></i> Borrar</button>
+                    </td>';
                         echo "</tr>";
                     }
                 } else {
@@ -616,6 +618,7 @@ include('../Auth/session.php');
             </ul>
         </nav>
     </div>
+
     <script>
         function agregarPlatillo() {
             fetch('../Controlador/Platillo/obtener_tipos.php')  // Esta URL debe devolver los tipos de platillo y producto.
@@ -694,11 +697,22 @@ include('../Auth/session.php');
                                     .then(response => response.json())
                                     .then(data => {
                                         if (data.success) {
-                                            Swal.fire('¡Éxito!', 'Platillo agregado correctamente.', 'success');
+                                            Swal.fire({
+                                                title: '¡Éxito!',
+                                                text: 'El platillo ha sido agregado correctamente.',
+                                                icon: 'success',
+                                                confirmButtonText: 'Aceptar'
+                                            }).then((result) => {
+                                                if (result.isConfirmed) {
+                                                    // Recarga la página después de aceptar el mensaje
+                                                    location.reload();
+                                                }
+                                            });
                                         } else {
                                             Swal.fire('Error', 'Hubo un problema al agregar el platillo.', 'error');
                                         }
                                     });
+
                             }
                         });
                     }
@@ -795,7 +809,16 @@ include('../Auth/session.php');
                                     .then(response => response.json())
                                     .then(data => {
                                         if (data.success) {
-                                            Swal.fire('¡Éxito!', 'Platillo actualizado correctamente.', 'success');
+                                            Swal.fire({
+                                                title: '¡Éxito!',
+                                                text: 'Platillo actualizado correctamente.',
+                                                icon: 'success',
+                                                confirmButtonText: 'Aceptar'
+                                            }).then((result) => {
+                                                if (result.isConfirmed) {
+                                                    location.reload();
+                                                }
+                                            });
                                         } else {
                                             Swal.fire('Error', 'Hubo un problema al actualizar el platillo.', 'error');
                                         }
