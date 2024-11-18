@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <?php
+include('../Database/conexion.php');
+
 session_start();
 
 if (!isset($_SESSION['usuario_id'])) {
@@ -9,13 +11,6 @@ if (!isset($_SESSION['usuario_id'])) {
     </script>";
     exit();
 }
-
-$nombre_usuario = $_SESSION['nombre_usuario'];
-$correo_usuario = $_SESSION['correo_usuario'];
-$tipo_usuario = $_SESSION['tipo_usuario'];
-$fecha_creacion = $_SESSION['fecha_creacion'];
-$contrasena_usuario = $_SESSION['contrasena_usuario'];
-
 ?>
 <html>
 
@@ -371,7 +366,7 @@ $contrasena_usuario = $_SESSION['contrasena_usuario'];
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-                        <li><a class="dropdown-item" href="#">Salir</a></li>
+                        <li><a class="dropdown-item" onclick="logout()">Salir</a></li>
                     </ul>
                 </div>
             </div>
@@ -429,203 +424,96 @@ $contrasena_usuario = $_SESSION['contrasena_usuario'];
 
     <hr style="height:10px; border:0; background-color:yellowgreen;">
 
-    <div class="container">
-        <div class="table_header">
-            <h2>PLATOS Y BEBIDAS</h2>
-            <br>
+    <div class="container mt-5" id="platillosTable">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Platos y Bebidas</h2>
+            <div>
+                <?php
+                $tipo_platillo = isset($_GET['tipo']) ? $_GET['tipo'] : '';
 
-            <select name="Tipos de platos" id="">
-                <option value="" selected>Todos</option>
-                <option value="">Ceviches</option>
-                <option value="">Especiales</option>
-                <option value="">Bebidas</option>
-
-            </select>
-            <div class="input_search">
-                <input type="search" placeholder="Buscar" />
-                <i class="bi bi-search" id="search"></i>
+                $where_clause = "";
+                if ($tipo_platillo != '') {
+                    $where_clause = " WHERE p.id_tipo_producto = '$tipo_platillo'";
+                }
+                ?>
+                <form method="GET" action="">
+                    <select name="tipo" class="form-select d-inline-block w-auto me-2" onchange="this.form.submit()">
+                        <option value="" selected>Todos</option>
+                        <option value="1" <?php if ($tipo_platillo == '1')
+                            echo 'selected'; ?>>Ceviches</option>
+                        <option value="2" <?php if ($tipo_platillo == '2')
+                            echo 'selected'; ?>>Especiales</option>
+                        <option value="3" <?php if ($tipo_platillo == '3')
+                            echo 'selected'; ?>>Bebidas</option>
+                    </select>
+                    <div class="input-group d-inline-flex">
+                        <input type="text" class="form-control" placeholder="Buscar" name="buscar"
+                            value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" />
+                    </div>
+                </form>
             </div>
         </div>
-        <table>
+
+        <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Nombre de producto <i class="bi bi-chevron-expand"></i></th>
-                    <th>Tipo <i class="bi bi-chevron-expand"></i></th>
-                    <th>Precio <i class="bi bi-chevron-expand"></i></th>
-                    <th>Operaciones <i class="bi bi-chevron-expand"></i></th>
+                    <th>Nombre de Producto</th>
+                    <th>Tipo</th>
+                    <th>Precio</th>
+                    <th>Operaciones</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>CEVICHE DE PESCADO</td>
-                    <td>Ceviches</td>
-                    <td>s/32</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                </tr>
-                <tr>
-                    <td>CEVICHE DE LANGOSTINOS/MIXTO</td>
-                    <td>Ceviches</td>
-                    <td>s/35</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                </tr>
-                <tr>
-                    <td>PESCADO Y LANGOSTINOS</td>
-                    <td>Ceviches</td>
-                    <td>s/35</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                </tr>
-                <tr>
-                    <td>COCTEL DE LANGOSTINOS</td>
-                    <td>Entrada</td>
-                    <td>s/36</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                </tr>
-                <tr>
-                    <td>LANGOSTINOS A LA PARMESANA </td>
-                    <td>Platillos</td>
-                    <td>s/36</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                </tr>
-                <tr>
-                    <td>ARROZ CON LANGOSTINOS</td>
-                    <td>Platillos</td>
-                    <td>s/35</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                </tr>
-                <tr>
-                    <td>CHAUFA DE LANGOSTINOS</td>
-                    <td>Platillos</td>
-                    <td>s/35</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                </tr>
-                <tr>
-                    <td>SALTADO DE LANGOSTINOS</td>
-                    <td>Platillos</td>
-                    <td>s/35</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                </tr>
-                <tr>
-                    <td>CHICHARRON DE PESCADO</td>
-                    <td>Platillos</td>
-                    <td>s/32</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                </tr>
-                <tr>
-                    <td>CHICHARRON DE LANGOSTINOS / MIXTO</td>
-                    <td>Platillos</td>
-                    <td>s/35</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                </tr>
-                <tr>
-                    <td>PESCADO Y LANGOSTINOS</td>
-                    <td>Platillos</td>
-                    <td>s/35</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                </tr>
-                <tr>
-                    <td>MILANESA DE PESCADO</td>
-                    <td>Platillos</td>
-                    <td>s/30</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                </tr>
-                <tr>
-                    <td>JALEA MIXTA</td>
-                    <td>Platillos</td>
-                    <td>s/55</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                <tr>
-                    <td>PORCION DE CHIFLES</td>
-                    <td>Entrada</td>
-                    <td>s/5</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                <tr>
-                    <td>PORCION DE PAPAS FRITAS</td>
-                    <td>Entrada</td>
-                    <td>s/5</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                <tr>
-                    <td>PORCION DE ARROZ</td>
-                    <td>Entrada</td>
-                    <td>s/5</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                <tr>
-                    <td>CERVEZA CUSQUEÑA</td>
-                    <td>Bebidas</td>
-                    <td>s/8</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                <tr>
-                    <td>CERVEZA PILSEN / CRISTAL</td>
-                    <td>Bebidas</td>
-                    <td>s/7</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                <tr>
-                    <td>VASO CHICHA DE JORA</td>
-                    <td>Bebidas</td>
-                    <td>s/5</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                <tr>
-                    <td>VASO CHICHA MORADA</td>
-                    <td>Bebidas</td>
-                    <td>s/5</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                <tr>
-                    <td>AGUA PERSONAL</td>
-                    <td>Bebidas</td>
-                    <td>s/5</td>
-                    <td>
-                        <i class="bi bi-pencil-square" id="icons"></i><i class="bi bi-trash" id="icons"></i>
-                    </td>
-                <tr>
+                <?php
+                $buscar = isset($_GET['buscar']) ? $_GET['buscar'] : '';
 
-                </tr>
+                $query = "SELECT p.nombre_platillo, p.precio, tp.nombre_tipo 
+                      FROM platillos p 
+                      JOIN tipo_producto tp ON p.id_tipo_producto = tp.id" . $where_clause;
 
+                if (!empty($buscar)) {
+                    $query .= " AND p.nombre_platillo LIKE '%$buscar%'";
+                }
+
+                $result = mysqli_query($conn, $query);
+
+                if ($result && mysqli_num_rows($result) > 0) {
+                    while ($row = mysqli_fetch_assoc($result)) {
+                        echo "<tr>";
+                        echo "<td>" . htmlspecialchars($row['nombre_platillo']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['nombre_tipo']) . "</td>";
+                        echo "<td>s/" . htmlspecialchars($row['precio']) . "</td>";
+                        echo '<td>
+                            <button class="btn btn-warning btn-sm me-2"><i class="bi bi-pencil-square"></i> Editar</button>
+                            <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Borrar</button>
+                          </td>';
+                        echo "</tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='4' class='text-center'>No hay datos disponibles</td></tr>";
+                }
+                ?>
             </tbody>
         </table>
-        <div class="table_fotter">
-            <p>Total filas: </p>
-
-        </div>
     </div>
+
+    <script>
+        function scrollToTable() {
+            const table = document.getElementById("platillosTable");
+            if (table) {
+                table.scrollIntoView({ behavior: "smooth" });
+            }
+        }
+        window.onload = function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('tipo') || urlParams.has('buscar')) {
+                scrollToTable();
+            }
+        };
+    </script>
+
+
+
     </div>
     <table border="0" width: 100%; height: 100vh;">
         <tr>
@@ -800,7 +688,6 @@ $contrasena_usuario = $_SESSION['contrasena_usuario'];
             }
         }
     </script>
-
 
 </body>
 
