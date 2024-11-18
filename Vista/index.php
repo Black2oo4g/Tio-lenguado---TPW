@@ -282,6 +282,85 @@ include('../Auth/session.php');
             border-radius: 5px;
             cursor: pointer;
         }
+
+        /* Estilo general para el popup */
+        .custom-popup {
+            font-size: 16px;
+            /* Tamaño de la fuente general */
+            width: 450px;
+            /* Establece un ancho fijo para que todo se vea equilibrado */
+            padding: 20px;
+        }
+
+        /* Estilo para el título */
+        .custom-title {
+            font-size: 20px;
+            /* Tamaño de la fuente del título */
+            margin-bottom: 20px;
+        }
+
+        /* Estilo para el contenido */
+        .custom-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            /* Espacio entre los campos */
+        }
+
+        /* Estilo para cada input y select */
+        .custom-input {
+            font-size: 14px;
+            /* Tamaño de la fuente de los inputs */
+            width: 100%;
+            /* Asegura que los campos ocupen todo el ancho disponible */
+            padding: 10px;
+            margin: 5px 0;
+            /* Espacio superior e inferior para los campos */
+            border-radius: 4px;
+            /* Bordes redondeados */
+            border: 1px solid #ccc;
+            /* Borde suave */
+        }
+
+
+
+        /* Estilo para los labels */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+#id_tipo_producto {
+    font-size: 14px;
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+#photo {
+    padding: 8px;
+    font-size: 14px;
+    width: 100%;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #f8f9fa;
+}
+
+.swal2-input {
+    font-size: 14px;
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
     </style>
 
     <script>
@@ -477,7 +556,7 @@ include('../Auth/session.php');
                     $query .= " AND p.nombre_platillo LIKE '%$buscar%'";
                 }
                 $query .= " LIMIT $offset, $registros_por_pagina";
-                
+
                 $result = mysqli_query($conn, $query);
 
                 if ($result && mysqli_num_rows($result) > 0) {
@@ -549,23 +628,41 @@ include('../Auth/session.php');
                         Swal.fire({
                             title: 'Editar Platillo',
                             html: `
-                        <input type="text" id="nombre_platillo" class="swal2-input" value="${data.platillo.nombre_platillo}" placeholder="Nombre del Platillo">
-                        <input type="number" id="precio" class="swal2-input" value="${data.platillo.precio}" placeholder="Precio">
-                        
-                        <!-- Select para tipo de platillo -->
-                        <select id="id_tipo_platillo" class="swal2-input">
-                            ${tiposPlatilloOptions}
-                        </select>
-                        
-                        <!-- Select para tipo de producto -->
-                        <select id="id_tipo_producto" class="swal2-input">
-                            ${tiposProductoOptions}
-                        </select>
+                                <div class="form-group">
+                                    <label for="nombre_platillo">Nombre del Platillo</label>
+                                    <input type="text" id="nombre_platillo" class="swal2-input" value="${data.platillo.nombre_platillo}" placeholder="Nombre del Platillo">
+                                </div>
 
-                        <!-- Campo para foto del platillo -->
-                        <input type="text" id="photo" class="swal2-input" value="${data.platillo.photo}" placeholder="URL de la imagen">
+                                <div class="form-group">
+                                    <label for="precio">Precio</label>
+                                    <input type="number" id="precio" class="swal2-input" value="${data.platillo.precio}" placeholder="Precio">
+                                </div>
 
-                    `,
+                                <div class="form-group">
+                                    <label for="id_tipo_platillo">Tipo de Platillo</label>
+                                    <select id="id_tipo_platillo" class="swal2-input">
+                                        ${tiposPlatilloOptions}
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="id_tipo_producto">Tipo de Producto</label>
+                                    <select id="id_tipo_producto" class="swal2-input">
+                                        ${tiposProductoOptions}
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="photo">Foto del Platillo</label>
+                                    <input type="file" id="photo" class="swal2-input" accept="image/*" placeholder="Seleccionar imagen">
+                                </div>
+                            `,
+                            customClass: {
+                                popup: 'custom-popup',
+                                title: 'custom-title',
+                                content: 'custom-content',
+                                input: 'custom-input'
+                            },
                             showCancelButton: true,
                             confirmButtonText: 'Guardar cambios',
                             cancelButtonText: 'Cancelar',
@@ -633,7 +730,7 @@ include('../Auth/session.php');
                   FROM platillos p 
                   JOIN tipo_producto tp ON p.id_tipo_producto = tp.id 
                   WHERE p.id_tipo_producto = 3";
-            
+
             $result = mysqli_query($conn, $query);
 
             if ($result && mysqli_num_rows($result) > 0) {
