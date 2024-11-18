@@ -1,16 +1,6 @@
 <!DOCTYPE html>
 <?php
-include('../Database/conexion.php');
-
-session_start();
-
-if (!isset($_SESSION['usuario_id'])) {
-    echo "<script>
-        alert('Por favor, inicie sesión primero.');
-        window.location.href = '../Public_html/login.html';
-    </script>";
-    exit();
-}
+include('../Auth/session.php');
 ?>
 <html>
 
@@ -440,11 +430,11 @@ if (!isset($_SESSION['usuario_id'])) {
                     <select name="tipo" class="form-select d-inline-block w-auto me-2" onchange="this.form.submit()">
                         <option value="" selected>Todos</option>
                         <option value="1" <?php if ($tipo_platillo == '1')
-                            echo 'selected'; ?>>Ceviches</option>
+                            echo 'selected'; ?>>Personal</option>
                         <option value="2" <?php if ($tipo_platillo == '2')
-                            echo 'selected'; ?>>Especiales</option>
+                            echo 'selected'; ?>>Mediano</option>
                         <option value="3" <?php if ($tipo_platillo == '3')
-                            echo 'selected'; ?>>Bebidas</option>
+                            echo 'selected'; ?>>Familiar</option>
                     </select>
                     <div class="input-group d-inline-flex">
                         <input type="text" class="form-control" placeholder="Buscar" name="buscar"
@@ -512,58 +502,50 @@ if (!isset($_SESSION['usuario_id'])) {
         };
     </script>
 
+<div class="container mt-5" id="platillosTable">
+    <h2 style="color:firebrick; margin-top: 1em;"><strong>Platos de Entrada</strong></h2>
+    
+    <div class="row">
+        <?php
+        // Consulta para obtener los platillos de tipo "Entrada" (id_tipo_producto = 3)
+        $query = "SELECT p.nombre_platillo, p.precio, tp.nombre_tipo 
+                  FROM platillos p 
+                  JOIN tipo_producto tp ON p.id_tipo_producto = tp.id 
+                  WHERE p.id_tipo_producto = 3"; // Filtro solo para "Entrada"
+        
+        $result = mysqli_query($conn, $query);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                echo '<div class="col-md-4 mb-4">'; // Columna para cada tarjeta
+                echo '<div class="card" style="width: 18rem;">';
+                
+                // Imagen del platillo (deja el campo libre por ahora)
+                echo '<img src="" class="card-img-top" alt="Imagen del platillo">';
+                
+                echo '<div class="card-body">';
+                echo '<h5 class="card-title">' . htmlspecialchars($row['nombre_platillo']) . '</h5>';
+                echo '<p class="card-text">Tipo: ' . htmlspecialchars($row['nombre_tipo']) . '</p>';
+                echo '<p class="card-text">Precio: s/' . htmlspecialchars($row['precio']) . '</p>';
+                echo '</div>'; // Cierre del cuerpo de la tarjeta
+                echo '</div>'; // Cierre de la tarjeta
+                echo '</div>'; // Cierre de la columna
+            }
+        } else {
+            echo "<p>No hay platos de entrada disponibles.</p>";
+        }
+        ?>
+    </div>
+</div>
+
 
 
     </div>
-    <table border="0" width: 100%; height: 100vh;">
-        <tr>
-            <td align="left">
-                <h2 style="color:firebrick; margin-top: 1em;"><strong>Platos Destacados</strong> </h2>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <ul>
-                    <li align="Center">
-                        <h4 class="highlight">PLATILLOS</h4>
-                        <ul>
-                            <li style="color:aqua" align="left"><strong>Chicharrón de Pescado s/32</strong></li>
-                            <li style="color:aqua" align="left"><strong>Saltado de Langostinos s/35</strong></li>
-                            <li style="color:aqua" align="left"><strong>Chicharron de Langostinos<br></strong>
-                                (Langostinos - Mixto) s/35</li>
-                        </ul>
-
-                    </li>
-                </ul>
 
 
 
-            </td>
-
-            <td><img width="200" height="200" src="Imagenes/tigre.png" alt="Leche de tigre" /></td>
-        </tr>
-        <tr>
-            <td>
-                <ul>
-                    <li align="Center">
-                        <h4 class="highlight">Ceviches</h4>
-                        <ul>
-                            <li style="color:aqua" align="left"><strong>Ceviche de Pescado s/32</strong></li>
-                            <li style="color:aqua" align="left"><strong>Ceviche de Langostinos - Mixto s/35</strong>
-                            </li>
-                            <li style="color:aqua" align="left"><strong>Pescado y Langostinos s/35 <br></strong> </li>
-                        </ul>
-
-                    </li>
-                </ul>
 
 
-
-            </td>
-
-            <td><img width="200" height="200" src="Imagenes/ceviche.png" alt="Leche de tigre" /></td>
-        </tr>
-    </table>
     <div align="center" class="mapa">
         <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2295.411937433515!2d-80.65095359336813!3d-5.1796691226926175!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x904a1b37fcb1db41%3A0x317d0729458c678b!2sRestaurante%20Tio%20Lenguado!5e0!3m2!1ses!2spe!4v1728933493689!5m2!1ses!2spe"
@@ -661,9 +643,8 @@ if (!isset($_SESSION['usuario_id'])) {
     <script>
 
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <button class="boton_cerrar btn btn-danger" onclick="logout()">Finalizar Sesión</button>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function logout() {
             const confirmLogout = confirm("¿Estás seguro de que deseas finalizar la sesión?");
