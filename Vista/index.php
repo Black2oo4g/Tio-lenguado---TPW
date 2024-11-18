@@ -503,12 +503,12 @@ include('../Auth/session.php');
     </script>
 
 <div class="container mt-5" id="platillosTable">
-    <h2 style="color:firebrick; margin-top: 1em;"><strong>Platos de Entrada</strong></h2>
+    <h2 style="color:firebrick; margin-top: 1em;"><strong>Especial del dia</strong></h2>
     
     <div class="row">
         <?php
-        // Consulta para obtener los platillos de tipo "Entrada" (id_tipo_producto = 3)
-        $query = "SELECT p.nombre_platillo, p.precio, tp.nombre_tipo 
+        // Consulta para obtener los platillos de tipo "Entrada" (id_tipo_producto = 3) y la foto
+        $query = "SELECT p.nombre_platillo, p.precio, tp.nombre_tipo, p.photo 
                   FROM platillos p 
                   JOIN tipo_producto tp ON p.id_tipo_producto = tp.id 
                   WHERE p.id_tipo_producto = 3"; // Filtro solo para "Entrada"
@@ -520,8 +520,11 @@ include('../Auth/session.php');
                 echo '<div class="col-md-4 mb-4">'; // Columna para cada tarjeta
                 echo '<div class="card" style="width: 18rem;">';
                 
-                // Imagen del platillo (deja el campo libre por ahora)
-                echo '<img src="" class="card-img-top" alt="Imagen del platillo">';
+                // Verificar si hay una imagen disponible, si no, se utiliza una imagen predeterminada
+                $img_url = !empty($row['photo']) ? "ruta/a/imagenes/" . $row['photo'] : "ruta/a/imagen_default.jpg"; 
+
+                // Imagen del platillo
+                echo '<img src="' . $img_url . '" class="card-img-top" alt="Imagen del platillo">';
                 
                 echo '<div class="card-body">';
                 echo '<h5 class="card-title">' . htmlspecialchars($row['nombre_platillo']) . '</h5>';
@@ -537,6 +540,7 @@ include('../Auth/session.php');
         ?>
     </div>
 </div>
+
 
 
 
