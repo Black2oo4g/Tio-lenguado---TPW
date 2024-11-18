@@ -10,4 +10,10 @@ if (!isset($_SESSION['usuario_id'])) {
     </script>";
     exit();
 }
+// Recuperar los datos del usuario desde la sesión
+$nombre_usuario = $_SESSION['nombre_usuario'];
+$correo_usuario = $_SESSION['correo_usuario'];
+$tipo_usuario = $_SESSION['tipo_usuario'];
+$fecha_creacion = $_SESSION['fecha_creacion'];
+$contrasena_usuario = $_SESSION['contrasena_usuario'];
 ?>
