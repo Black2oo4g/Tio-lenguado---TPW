@@ -415,139 +415,140 @@ include('../Auth/session.php');
     <hr style="height:10px; border:0; background-color:yellowgreen;">
 
     <div class="container mt-5" id="platillosTable">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Platos y Bebidas</h2>
-        <div>
-            <?php
-            $tipo_platillo = isset($_GET['tipo']) ? $_GET['tipo'] : '';
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Platos y Bebidas</h2>
+            <div>
+                <?php
+                $tipo_platillo = isset($_GET['tipo']) ? $_GET['tipo'] : '';
 
-            $where_clause = "";
-            if ($tipo_platillo != '') {
-                $where_clause = " WHERE p.id_tipo_producto = '$tipo_platillo'";
-            }
-            ?>
-            <form method="GET" action="">
-                <select name="tipo" class="form-select d-inline-block w-auto me-2" onchange="this.form.submit()">
-                    <option value="" selected>Todos</option>
-                    <option value="1" <?php if ($tipo_platillo == '1') echo 'selected'; ?>>Personal</option>
-                    <option value="2" <?php if ($tipo_platillo == '2') echo 'selected'; ?>>Mediano</option>
-                    <option value="3" <?php if ($tipo_platillo == '3') echo 'selected'; ?>>Familiar</option>
-                </select>
-                <div class="input-group d-inline-flex">
-                    <input type="text" class="form-control" placeholder="Buscar" name="buscar" value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" />
-                </div>
-            </form>
+                $where_clause = "";
+                if ($tipo_platillo != '') {
+                    $where_clause = " WHERE p.id_tipo_producto = '$tipo_platillo'";
+                }
+                ?>
+                <form method="GET" action="">
+                    <select name="tipo" class="form-select d-inline-block w-auto me-2" onchange="this.form.submit()">
+                        <option value="" selected>Todos</option>
+                        <option value="1" <?php if ($tipo_platillo == '1')
+                            echo 'selected'; ?>>Personal</option>
+                        <option value="2" <?php if ($tipo_platillo == '2')
+                            echo 'selected'; ?>>Mediano</option>
+                        <option value="3" <?php if ($tipo_platillo == '3')
+                            echo 'selected'; ?>>Familiar</option>
+                    </select>
+                    <div class="input-group d-inline-flex">
+                        <input type="text" class="form-control" placeholder="Buscar" name="buscar"
+                            value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" />
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
 
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Imagen</th> <!-- Nueva columna para la imagen -->
-                <th>Nombre de Producto</th>
-                <th>Tipo</th>
-                <th>Precio</th>
-                <th>Operaciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            // Paginación: definir el número de registros por página
-            $registros_por_pagina = 8;
-            $pagina_actual = isset($_GET['pagina']) ? $_GET['pagina'] : 1;
-            $offset = ($pagina_actual - 1) * $registros_por_pagina;
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Imagen</th>
+                    <th>Nombre de Producto</th>
+                    <th>Tipo</th>
+                    <th>Precio</th>
+                    <th>Operaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                $registros_por_pagina = 8;
+                $pagina_actual = isset($_GET['pagina']) ? $_GET['pagina'] : 1;
+                $offset = ($pagina_actual - 1) * $registros_por_pagina;
 
-            $buscar = isset($_GET['buscar']) ? $_GET['buscar'] : '';
+                $buscar = isset($_GET['buscar']) ? $_GET['buscar'] : '';
 
-            // Contar el total de registros para determinar cuántas páginas habrá
-            $query_count = "SELECT COUNT(*) AS total FROM platillos p JOIN tipo_producto tp ON p.id_tipo_producto = tp.id" . $where_clause;
-            if (!empty($buscar)) {
-                $query_count .= " AND p.nombre_platillo LIKE '%$buscar%'";
-            }
-            $result_count = mysqli_query($conn, $query_count);
-            $total_registros = mysqli_fetch_assoc($result_count)['total'];
-            $total_paginas = ceil($total_registros / $registros_por_pagina);
+                $query_count = "SELECT COUNT(*) AS total FROM platillos p JOIN tipo_producto tp ON p.id_tipo_producto = tp.id" . $where_clause;
+                if (!empty($buscar)) {
+                    $query_count .= " AND p.nombre_platillo LIKE '%$buscar%'";
+                }
+                $result_count = mysqli_query($conn, $query_count);
+                $total_registros = mysqli_fetch_assoc($result_count)['total'];
+                $total_paginas = ceil($total_registros / $registros_por_pagina);
 
-            // Obtener los registros de la página actual
-            $query = "SELECT p.id, p.nombre_platillo, p.precio, tp.nombre_tipo, p.photo 
+                $query = "SELECT p.id, p.nombre_platillo, p.precio, tp.nombre_tipo, p.photo 
                       FROM platillos p 
                       JOIN tipo_producto tp ON p.id_tipo_producto = tp.id" . $where_clause;
-            if (!empty($buscar)) {
-                $query .= " AND p.nombre_platillo LIKE '%$buscar%'";
-            }
-            $query .= " LIMIT $offset, $registros_por_pagina"; // Limitar los resultados por página
+                if (!empty($buscar)) {
+                    $query .= " AND p.nombre_platillo LIKE '%$buscar%'";
+                }
+                $query .= " LIMIT $offset, $registros_por_pagina";
+                
+                $result = mysqli_query($conn, $query);
 
-            $result = mysqli_query($conn, $query);
+                if ($result && mysqli_num_rows($result) > 0) {
+                    while ($row = mysqli_fetch_assoc($result)) {
+                        echo "<tr>";
 
-            if ($result && mysqli_num_rows($result) > 0) {
-                while ($row = mysqli_fetch_assoc($result)) {
-                    echo "<tr>";
+                        $img_url = !empty($row['photo']) ? "ruta/a/imagenes/" . $row['photo'] : "ruta/a/imagen_default.jpg";
 
-                    // Verificar si hay una imagen y mostrarla
-                    $img_url = !empty($row['photo']) ? "ruta/a/imagenes/" . $row['photo'] : "ruta/a/imagen_default.jpg"; 
+                        echo "<td><img src='$img_url' alt='Imagen del platillo' class='img-thumbnail' style='width: 50px; height: 50px;'></td>";
 
-                    // Mostrar imagen
-                    echo "<td><img src='$img_url' alt='Imagen del platillo' class='img-thumbnail' style='width: 50px; height: 50px;'></td>";
-                    
-                    echo "<td>" . htmlspecialchars($row['nombre_platillo']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['nombre_tipo']) . "</td>";
-                    echo "<td>s/" . htmlspecialchars($row['precio']) . "</td>";
-                    echo '<td>
+                        echo "<td>" . htmlspecialchars($row['nombre_platillo']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['nombre_tipo']) . "</td>";
+                        echo "<td>s/" . htmlspecialchars($row['precio']) . "</td>";
+                        echo '<td>
                             <button class="btn btn-warning btn-sm me-2" onclick="editarPlatillo(' . $row['id'] . ')"><i class="bi bi-pencil-square"></i> Editar</button>
                             <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Borrar</button>
                           </td>';
-                    echo "</tr>";
+                        echo "</tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='5' class='text-center'>No hay datos disponibles</td></tr>";
                 }
-            } else {
-                echo "<tr><td colspan='5' class='text-center'>No hay datos disponibles</td></tr>";
-            }
-            ?>
-        </tbody>
-    </table>
+                ?>
+            </tbody>
+        </table>
 
-    <!-- Paginación -->
-    <nav aria-label="Página de resultados">
-        <ul class="pagination justify-content-center">
-            <li class="page-item <?php echo ($pagina_actual <= 1) ? 'disabled' : ''; ?>">
-                <a class="page-link" href="?pagina=<?php echo ($pagina_actual - 1); ?>&tipo=<?php echo $tipo_platillo; ?>&buscar=<?php echo urlencode($buscar); ?>" aria-label="Anterior">
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
-            </li>
-            <?php
-            for ($i = 1; $i <= $total_paginas; $i++) {
-                echo "<li class='page-item " . ($i == $pagina_actual ? "active" : "") . "'><a class='page-link' href='?pagina=$i&tipo=$tipo_platillo&buscar=" . urlencode($buscar) . "'>$i</a></li>";
-            }
-            ?>
-            <li class="page-item <?php echo ($pagina_actual >= $total_paginas) ? 'disabled' : ''; ?>">
-                <a class="page-link" href="?pagina=<?php echo ($pagina_actual + 1); ?>&tipo=<?php echo $tipo_platillo; ?>&buscar=<?php echo urlencode($buscar); ?>" aria-label="Siguiente">
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
-</div>
+        <!-- Paginación -->
+        <nav aria-label="Página de resultados">
+            <ul class="pagination justify-content-center">
+                <li class="page-item <?php echo ($pagina_actual <= 1) ? 'disabled' : ''; ?>">
+                    <a class="page-link"
+                        href="?pagina=<?php echo ($pagina_actual - 1); ?>&tipo=<?php echo $tipo_platillo; ?>&buscar=<?php echo urlencode($buscar); ?>"
+                        aria-label="Anterior">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <?php
+                for ($i = 1; $i <= $total_paginas; $i++) {
+                    echo "<li class='page-item " . ($i == $pagina_actual ? "active" : "") . "'><a class='page-link' href='?pagina=$i&tipo=$tipo_platillo&buscar=" . urlencode($buscar) . "'>$i</a></li>";
+                }
+                ?>
+                <li class="page-item <?php echo ($pagina_actual >= $total_paginas) ? 'disabled' : ''; ?>">
+                    <a class="page-link"
+                        href="?pagina=<?php echo ($pagina_actual + 1); ?>&tipo=<?php echo $tipo_platillo; ?>&buscar=<?php echo urlencode($buscar); ?>"
+                        aria-label="Siguiente">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
 
-<script>
-    function editarPlatillo(id) {
-    // Realiza una solicitud AJAX para obtener los detalles del platillo y las opciones de tipo de platillo y tipo de producto
-    fetch('../Controlador/Platillo/obtener_platillo.php?id=' + id)
-        .then(response => response.json())
-        .then(data => {
-            if (data.platillo) {
-                // Abre un modal de SweetAlert2 con los campos para editar
-                let tiposPlatilloOptions = '';
-                data.tipos_platillo.forEach(tipo => {
-                    tiposPlatilloOptions += `<option value="${tipo.id}" ${tipo.id === data.platillo.id_tipo_platillo ? 'selected' : ''}>${tipo.nombre_tipo_platillo}</option>`;
-                });
+    <script>
+        function editarPlatillo(id) {
+            fetch('../Controlador/Platillo/obtener_platillo.php?id=' + id)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.platillo) {
+                        let tiposPlatilloOptions = '';
+                        data.tipos_platillo.forEach(tipo => {
+                            tiposPlatilloOptions += `<option value="${tipo.id}" ${tipo.id === data.platillo.id_tipo_platillo ? 'selected' : ''}>${tipo.nombre_tipo_platillo}</option>`;
+                        });
 
-                let tiposProductoOptions = '';
-                data.tipos_producto.forEach(tipo => {
-                    tiposProductoOptions += `<option value="${tipo.id}" ${tipo.id === data.platillo.id_tipo_producto ? 'selected' : ''}>${tipo.nombre_tipo}</option>`;
-                });
+                        let tiposProductoOptions = '';
+                        data.tipos_producto.forEach(tipo => {
+                            tiposProductoOptions += `<option value="${tipo.id}" ${tipo.id === data.platillo.id_tipo_producto ? 'selected' : ''}>${tipo.nombre_tipo}</option>`;
+                        });
 
-                Swal.fire({
-                    title: 'Editar Platillo',
-                    html: `
+                        Swal.fire({
+                            title: 'Editar Platillo',
+                            html: `
                         <input type="text" id="nombre_platillo" class="swal2-input" value="${data.platillo.nombre_platillo}" placeholder="Nombre del Platillo">
                         <input type="number" id="precio" class="swal2-input" value="${data.platillo.precio}" placeholder="Precio">
                         
@@ -560,50 +561,54 @@ include('../Auth/session.php');
                         <select id="id_tipo_producto" class="swal2-input">
                             ${tiposProductoOptions}
                         </select>
-                    `,
-                    showCancelButton: true,
-                    confirmButtonText: 'Guardar cambios',
-                    cancelButtonText: 'Cancelar',
-                    preConfirm: () => {
-                        // Recoge los valores de los inputs y los envía para actualizar
-                        const nombre_platillo = document.getElementById('nombre_platillo').value;
-                        const precio = document.getElementById('precio').value;
-                        const tipo_platillo = document.getElementById('id_tipo_platillo').value;
-                        const tipo_producto = document.getElementById('id_tipo_producto').value;
 
-                        return { nombre_platillo, precio, tipo_platillo, tipo_producto, id };
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Enviar los datos al servidor para actualizar
-                        fetch('../Controlador/Platillo/actualizar_platillo.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(result.value)
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire('¡Éxito!', 'Platillo actualizado correctamente.', 'success');
-                                location.reload();
-                            } else {
-                                Swal.fire('Error', 'Hubo un problema al actualizar el platillo.', 'error');
+                        <!-- Campo para foto del platillo -->
+                        <input type="text" id="photo" class="swal2-input" value="${data.platillo.photo}" placeholder="URL de la imagen">
+
+                    `,
+                            showCancelButton: true,
+                            confirmButtonText: 'Guardar cambios',
+                            cancelButtonText: 'Cancelar',
+                            preConfirm: () => {
+                                const nombre_platillo = document.getElementById('nombre_platillo').value;
+                                const precio = document.getElementById('precio').value;
+                                const tipo_platillo = document.getElementById('id_tipo_platillo').value;
+                                const tipo_producto = document.getElementById('id_tipo_producto').value;
+                                const photo = document.getElementById('photo').value;
+
+                                return { nombre_platillo, precio, tipo_platillo, tipo_producto, photo, id };
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                fetch('../Controlador/Platillo/actualizar_platillo.php', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        id: result.value.id,
+                                        nombre_platillo: result.value.nombre_platillo,
+                                        precio: result.value.precio,
+                                        tipo_producto: result.value.tipo_producto,
+                                        tipo_platillo: result.value.tipo_platillo,
+                                        photo: result.value.photo
+                                    })
+                                })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.success) {
+                                            Swal.fire('¡Éxito!', 'Platillo actualizado correctamente.', 'success');
+                                        } else {
+                                            Swal.fire('Error', 'Hubo un problema al actualizar el platillo.', 'error');
+                                        }
+                                    });
                             }
                         });
                     }
                 });
-            }
-        });
-}
+        }
 
-</script>
-
-
-
-
-
+    </script>
     <script>
         function scrollToTable() {
             const table = document.getElementById("platillosTable");
@@ -619,44 +624,41 @@ include('../Auth/session.php');
         };
     </script>
 
-<div class="container mt-5" id="platillosTable">
-    <h2 style="color:firebrick; margin-top: 1em;"><strong>Especial del dia</strong></h2>
-    
-    <div class="row">
-        <?php
-        // Consulta para obtener los platillos de tipo "Entrada" (id_tipo_producto = 3) y la foto
-        $query = "SELECT p.nombre_platillo, p.precio, tp.nombre_tipo, p.photo 
+    <div class="container mt-5" id="platillosTable">
+        <h2 style="color:firebrick; margin-top: 1em;"><strong>Especial del dia</strong></h2>
+
+        <div class="row">
+            <?php
+            $query = "SELECT p.nombre_platillo, p.precio, tp.nombre_tipo, p.photo 
                   FROM platillos p 
                   JOIN tipo_producto tp ON p.id_tipo_producto = tp.id 
-                  WHERE p.id_tipo_producto = 3"; // Filtro solo para "Entrada"
-        
-        $result = mysqli_query($conn, $query);
+                  WHERE p.id_tipo_producto = 3";
+            
+            $result = mysqli_query($conn, $query);
 
-        if ($result && mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                echo '<div class="col-md-4 mb-4">'; // Columna para cada tarjeta
-                echo '<div class="card" style="width: 18rem;">';
-                
-                // Verificar si hay una imagen disponible, si no, se utiliza una imagen predeterminada
-                $img_url = !empty($row['photo']) ? "ruta/a/imagenes/" . $row['photo'] : "ruta/a/imagen_default.jpg"; 
+            if ($result && mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_assoc($result)) {
+                    echo '<div class="col-md-4 mb-4">';
+                    echo '<div class="card" style="width: 18rem;">';
 
-                // Imagen del platillo
-                echo '<img src="' . $img_url . '" class="card-img-top" alt="Imagen del platillo">';
-                
-                echo '<div class="card-body">';
-                echo '<h5 class="card-title">' . htmlspecialchars($row['nombre_platillo']) . '</h5>';
-                echo '<p class="card-text">Tipo: ' . htmlspecialchars($row['nombre_tipo']) . '</p>';
-                echo '<p class="card-text">Precio: s/' . htmlspecialchars($row['precio']) . '</p>';
-                echo '</div>'; // Cierre del cuerpo de la tarjeta
-                echo '</div>'; // Cierre de la tarjeta
-                echo '</div>'; // Cierre de la columna
+                    $img_url = !empty($row['photo']) ? "ruta/a/imagenes/" . $row['photo'] : "ruta/a/imagen_default.jpg";
+
+                    echo '<img src="' . $img_url . '" class="card-img-top" alt="Imagen del platillo">';
+
+                    echo '<div class="card-body">';
+                    echo '<h5 class="card-title">' . htmlspecialchars($row['nombre_platillo']) . '</h5>';
+                    echo '<p class="card-text">Tipo: ' . htmlspecialchars($row['nombre_tipo']) . '</p>';
+                    echo '<p class="card-text">Precio: s/' . htmlspecialchars($row['precio']) . '</p>';
+                    echo '</div>';
+                    echo '</div>';
+                    echo '</div>';
+                }
+            } else {
+                echo "<p>No hay platos de entrada disponibles.</p>";
             }
-        } else {
-            echo "<p>No hay platos de entrada disponibles.</p>";
-        }
-        ?>
+            ?>
+        </div>
     </div>
-</div>
 
 
 
