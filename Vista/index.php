@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <?php
-// Asegúrate de que la sesión esté iniciada
 session_start();
 
-// Verificar si el usuario está autenticado
 if (!isset($_SESSION['usuario_id'])) {
     echo "<script>
         alert('Por favor, inicie sesión primero.');
@@ -12,7 +10,6 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 
-// Recuperar los datos del usuario desde la sesión
 $nombre_usuario = $_SESSION['nombre_usuario'];
 $correo_usuario = $_SESSION['correo_usuario'];
 $tipo_usuario = $_SESSION['tipo_usuario'];
@@ -683,7 +680,7 @@ $contrasena_usuario = $_SESSION['contrasena_usuario'];
         <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2295.411937433515!2d-80.65095359336813!3d-5.1796691226926175!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x904a1b37fcb1db41%3A0x317d0729458c678b!2sRestaurante%20Tio%20Lenguado!5e0!3m2!1ses!2spe!4v1728933493689!5m2!1ses!2spe"
             width="800" height="600" style="border:0;" allowfullscreen loading="lazy"></iframe>
-        
+
     </div>
 
     <footer>
@@ -741,11 +738,13 @@ $contrasena_usuario = $_SESSION['contrasena_usuario'];
         <form class="row g-3">
             <div class="col-md-6">
                 <label for="nombreUsuario" class="form-label">Nombre</label>
-                <input type="text" class="form-control" id="nombreUsuario" value="<?php echo $nombre_usuario; ?>" readonly>
+                <input type="text" class="form-control" id="nombreUsuario" value="<?php echo $nombre_usuario; ?>"
+                    readonly>
             </div>
             <div class="col-md-6">
                 <label for="correoUsuario" class="form-label">Correo</label>
-                <input type="email" class="form-control" id="correoUsuario" value="<?php echo $correo_usuario; ?>" readonly>
+                <input type="email" class="form-control" id="correoUsuario" value="<?php echo $correo_usuario; ?>"
+                    readonly>
             </div>
             <div class="col-md-6">
                 <label for="tipoUsuario" class="form-label">Tipo de Usuario</label>
@@ -753,11 +752,13 @@ $contrasena_usuario = $_SESSION['contrasena_usuario'];
             </div>
             <div class="col-md-6">
                 <label for="fechaCreacion" class="form-label">Fecha de Creación</label>
-                <input type="text" class="form-control" id="fechaCreacion" value="<?php echo $fecha_creacion; ?>" readonly>
+                <input type="text" class="form-control" id="fechaCreacion" value="<?php echo $fecha_creacion; ?>"
+                    readonly>
             </div>
             <div class="col-md-12">
                 <label for="contrasenaUsuario" class="form-label">Contraseña</label>
-                <input type="password" class="form-control" id="contrasenaUsuario" value="<?php echo $contrasena_usuario; ?>" readonly>
+                <input type="password" class="form-control" id="contrasenaUsuario"
+                    value="<?php echo $contrasena_usuario; ?>" readonly>
             </div>
             <div class="col-12">
                 <button class="boton_cerrar" onclick="closePopup()">Cerrar</button>
@@ -769,11 +770,38 @@ $contrasena_usuario = $_SESSION['contrasena_usuario'];
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
-        <script>
+    <script>
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <button class="boton_cerrar btn btn-danger" onclick="logout()">Finalizar Sesión</button>
+
+    <script>
         function logout() {
-            window.location.href = 'logout.php';
+            const confirmLogout = confirm("¿Estás seguro de que deseas finalizar la sesión?");
+            if (confirmLogout) {
+                // Realiza una solicitud AJAX para finalizar la sesión
+                fetch('../Auth/logout.php', {
+                    method: 'POST', // Solicitud POST para mayor seguridad
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert(data.message);
+                            window.location.href = '../Public_html/login.html'; // Redirige al login
+                        } else {
+                            alert('Hubo un problema al finalizar la sesión.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al cerrar sesión:', error);
+                        alert('Ocurrió un error al intentar cerrar sesión.');
+                    });
+            }
         }
     </script>
+
+
 </body>
 
 </html>
