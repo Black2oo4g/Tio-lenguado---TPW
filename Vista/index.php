@@ -469,7 +469,7 @@ include('../Auth/session.php');
             $total_paginas = ceil($total_registros / $registros_por_pagina);
 
             // Obtener los registros de la página actual
-            $query = "SELECT p.nombre_platillo, p.precio, tp.nombre_tipo, p.photo 
+            $query = "SELECT p.id, p.nombre_platillo, p.precio, tp.nombre_tipo, p.photo 
                       FROM platillos p 
                       JOIN tipo_producto tp ON p.id_tipo_producto = tp.id" . $where_clause;
             if (!empty($buscar)) {
@@ -493,7 +493,7 @@ include('../Auth/session.php');
                     echo "<td>" . htmlspecialchars($row['nombre_tipo']) . "</td>";
                     echo "<td>s/" . htmlspecialchars($row['precio']) . "</td>";
                     echo '<td>
-                            <button class="btn btn-warning btn-sm me-2"><i class="bi bi-pencil-square"></i> Editar</button>
+                            <button class="btn btn-warning btn-sm me-2" onclick="editarPlatillo(' . $row['id'] . ')"><i class="bi bi-pencil-square"></i> Editar</button>
                             <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Borrar</button>
                           </td>';
                     echo "</tr>";
@@ -526,6 +526,81 @@ include('../Auth/session.php');
         </ul>
     </nav>
 </div>
+
+<script>
+    function editarPlatillo(id) {
+    // Realiza una solicitud AJAX para obtener los detalles del platillo y las opciones de tipo de platillo y tipo de producto
+    fetch('../Controlador/Platillo/obtener_platillo.php?id=' + id)
+        .then(response => response.json())
+        .then(data => {
+            if (data.platillo) {
+                // Abre un modal de SweetAlert2 con los campos para editar
+                let tiposPlatilloOptions = '';
+                data.tipos_platillo.forEach(tipo => {
+                    tiposPlatilloOptions += `<option value="${tipo.id}" ${tipo.id === data.platillo.id_tipo_platillo ? 'selected' : ''}>${tipo.nombre_tipo_platillo}</option>`;
+                });
+
+                let tiposProductoOptions = '';
+                data.tipos_producto.forEach(tipo => {
+                    tiposProductoOptions += `<option value="${tipo.id}" ${tipo.id === data.platillo.id_tipo_producto ? 'selected' : ''}>${tipo.nombre_tipo}</option>`;
+                });
+
+                Swal.fire({
+                    title: 'Editar Platillo',
+                    html: `
+                        <input type="text" id="nombre_platillo" class="swal2-input" value="${data.platillo.nombre_platillo}" placeholder="Nombre del Platillo">
+                        <input type="number" id="precio" class="swal2-input" value="${data.platillo.precio}" placeholder="Precio">
+                        
+                        <!-- Select para tipo de platillo -->
+                        <select id="id_tipo_platillo" class="swal2-input">
+                            ${tiposPlatilloOptions}
+                        </select>
+                        
+                        <!-- Select para tipo de producto -->
+                        <select id="id_tipo_producto" class="swal2-input">
+                            ${tiposProductoOptions}
+                        </select>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Guardar cambios',
+                    cancelButtonText: 'Cancelar',
+                    preConfirm: () => {
+                        // Recoge los valores de los inputs y los envía para actualizar
+                        const nombre_platillo = document.getElementById('nombre_platillo').value;
+                        const precio = document.getElementById('precio').value;
+                        const tipo_platillo = document.getElementById('id_tipo_platillo').value;
+                        const tipo_producto = document.getElementById('id_tipo_producto').value;
+
+                        return { nombre_platillo, precio, tipo_platillo, tipo_producto, id };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Enviar los datos al servidor para actualizar
+                        fetch('../Controlador/Platillo/actualizar_platillo.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(result.value)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('¡Éxito!', 'Platillo actualizado correctamente.', 'success');
+                                location.reload();
+                            } else {
+                                Swal.fire('Error', 'Hubo un problema al actualizar el platillo.', 'error');
+                            }
+                        });
+                    }
+                });
+            }
+        });
+}
+
+</script>
+
+
 
 
 
