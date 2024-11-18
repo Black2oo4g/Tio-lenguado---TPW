@@ -334,33 +334,33 @@ include('../Auth/session.php');
             font-size: 14px;
             margin-bottom: 5px;
         }
-#id_tipo_producto {
-    font-size: 14px;
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-}
 
-#photo {
-    padding: 8px;
-    font-size: 14px;
-    width: 100%;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    background-color: #f8f9fa;
-}
+        #id_tipo_producto {
+            font-size: 14px;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
 
-.swal2-input {
-    font-size: 14px;
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-}
+        #photo {
+            padding: 8px;
+            font-size: 14px;
+            width: 100%;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background-color: #f8f9fa;
+        }
 
+        .swal2-input {
+            font-size: 14px;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
     </style>
 
     <script>
@@ -572,8 +572,9 @@ include('../Auth/session.php');
                         echo "<td>s/" . htmlspecialchars($row['precio']) . "</td>";
                         echo '<td>
                             <button class="btn btn-warning btn-sm me-2" onclick="editarPlatillo(' . $row['id'] . ')"><i class="bi bi-pencil-square"></i> Editar</button>
-                            <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Borrar</button>
-                          </td>';
+                            <button class="btn btn-danger  btn-sm me-2" onclick="eliminarPlatillo(' . $row['id'] . ')"> <i class="bi bi-trash"></i> Borrar</button>
+
+                            </td>';
                         echo "</tr>";
                     }
                 } else {
@@ -703,6 +704,46 @@ include('../Auth/session.php');
                         });
                     }
                 });
+        }
+        function eliminarPlatillo(id) {
+            // Mostrar una confirmación antes de eliminar
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: '¡No podrás revertir esta acción!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Si el usuario confirma la eliminación, hacer la solicitud de eliminación
+                    fetch('../Controlador/Platillo/eliminar_platillo.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ id: id })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: '¡Eliminado!',
+                                    text: 'El platillo ha sido eliminado.',
+                                    icon: 'success',
+                                    confirmButtonText: 'Aceptar'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        location.reload();
+                                    }
+                                });
+                            } else {
+                                Swal.fire('Error', 'Hubo un problema al eliminar el platillo.', 'error');
+                            }
+
+                        });
+                }
+            });
         }
 
     </script>
