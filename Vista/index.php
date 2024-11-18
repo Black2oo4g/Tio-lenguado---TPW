@@ -1,9 +1,25 @@
 <!DOCTYPE html>
-<!--
-Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
--->
+<?php
+// Asegúrate de que la sesión esté iniciada
+session_start();
 
+// Verificar si el usuario está autenticado
+if (!isset($_SESSION['usuario_id'])) {
+    echo "<script>
+        alert('Por favor, inicie sesión primero.');
+        window.location.href = '../Public_html/login.html';
+    </script>";
+    exit();
+}
+
+// Recuperar los datos del usuario desde la sesión
+$nombre_usuario = $_SESSION['nombre_usuario'];
+$correo_usuario = $_SESSION['correo_usuario'];
+$tipo_usuario = $_SESSION['tipo_usuario'];
+$fecha_creacion = $_SESSION['fecha_creacion'];
+$contrasena_usuario = $_SESSION['contrasena_usuario'];
+
+?>
 <html>
 
 <head>
@@ -614,16 +630,6 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
         </div>
     </div>
     </div>
-
-
-
-
-
-
-
-
-
-
     <table border="0" width: 100%; height: 100vh;">
         <tr>
             <td align="left">
@@ -677,7 +683,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
         <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2295.411937433515!2d-80.65095359336813!3d-5.1796691226926175!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x904a1b37fcb1db41%3A0x317d0729458c678b!2sRestaurante%20Tio%20Lenguado!5e0!3m2!1ses!2spe!4v1728933493689!5m2!1ses!2spe"
             width="800" height="600" style="border:0;" allowfullscreen loading="lazy"></iframe>
-            
+        
     </div>
 
     <footer>
@@ -731,59 +737,43 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
         </div>
     </footer>
     <div class="popup">
-        <h2>Iniciar sesión</h2>
+        <h2>Perfil del Usuario</h2>
         <form class="row g-3">
             <div class="col-md-6">
-                <label for="inputEmail4" class="form-label">Email</label>
-                <input type="email" class="form-control" id="inputEmail4" placeholder="Ingrese su Email">
+                <label for="nombreUsuario" class="form-label">Nombre</label>
+                <input type="text" class="form-control" id="nombreUsuario" value="<?php echo $nombre_usuario; ?>" readonly>
             </div>
             <div class="col-md-6">
-                <label for="inputPassword4" class="form-label">Contraseña</label>
-                <input type="password" class="form-control" id="inputPassword4" placeholder="Ingrese su Contraseña">
-            </div>
-            <div class="col-12">
-                <label for="inputAddress" class="form-label">Dirección</label>
-                <input type="text" class="form-control" id="inputAddress" placeholder="Urbanización/calle">
-            </div>
-            <div class="col-12">
-                <label for="inputAddress2" class="form-label">Dirección 2</label>
-                <input type="text" class="form-control" id="inputAddress2" placeholder="Apartamento,esrudio o trabajo">
+                <label for="correoUsuario" class="form-label">Correo</label>
+                <input type="email" class="form-control" id="correoUsuario" value="<?php echo $correo_usuario; ?>" readonly>
             </div>
             <div class="col-md-6">
-                <label for="inputCity" class="form-label">Ciudad</label>
-                <input type="text" class="form-control" id="inputCity" placeholder="Su ciudad">
+                <label for="tipoUsuario" class="form-label">Tipo de Usuario</label>
+                <input type="text" class="form-control" id="tipoUsuario" value="<?php echo $tipo_usuario; ?>" readonly>
             </div>
-            <div class="col-md-4">
-                <label for="inputState" class="form-label">Urbanización</label>
-                <select id="inputState" class="form-select">
-                    <option selected>La alborada</option>
-                    <option selected>Las Mercedes</option>
-                    <option selected>Tallanes</option>
-                    <option selected>Santa Rosa</option>
-                    <option selected>Avifap</option>
-                    <option selected>Otras...</option>
-
-                </select>
+            <div class="col-md-6">
+                <label for="fechaCreacion" class="form-label">Fecha de Creación</label>
+                <input type="text" class="form-control" id="fechaCreacion" value="<?php echo $fecha_creacion; ?>" readonly>
             </div>
-
-            <div class="col-12">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="gridCheck">
-                    <label class="form-check-label" for="gridCheck">
-                        Acepta los Terminos y Condiciones de la Página
-                    </label>
-                </div>
+            <div class="col-md-12">
+                <label for="contrasenaUsuario" class="form-label">Contraseña</label>
+                <input type="password" class="form-control" id="contrasenaUsuario" value="<?php echo $contrasena_usuario; ?>" readonly>
             </div>
             <div class="col-12">
-                <button type="submit" class="btn btn-primary">Ingresar</button>
+                <button class="boton_cerrar" onclick="closePopup()">Cerrar</button>
+                <button class="boton_cerrar" onclick="logout()">Finalizar Sesion</button>
             </div>
         </form>
-        <button class="boton_cerrar" onclick="closePopup()">Cerrar</button>
     </div>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
+        <script>
+        function logout() {
+            window.location.href = 'logout.php';
+        }
+    </script>
 </body>
 
 </html>

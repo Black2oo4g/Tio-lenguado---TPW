@@ -25,7 +25,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($password === $user['contrasena_usuario']) {
             $_SESSION['usuario_id'] = $user['id'];
             $_SESSION['nombre_usuario'] = $user['nombre_usuario'];
+            $_SESSION['correo_usuario'] = $user['correo_usuario'];
             $_SESSION['tipo_usuario'] = $user['tipo_usuario'];
+            $_SESSION['fecha_creacion'] = $user['fecha_creacion'];
+            $_SESSION['contrasena_usuario'] = $user['contrasena_usuario'];
 
             echo json_encode(['status' => 'success', 'message' => 'Inicio de sesión exitoso.', 'redirect' => '../Vista/index.php']);
             exit();
